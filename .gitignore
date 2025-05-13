@@ -1,0 +1,11 @@
+# Entorno virtual
+venv/
+
+# Cachés de Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+#Archivo DB
+data/tareas.json
