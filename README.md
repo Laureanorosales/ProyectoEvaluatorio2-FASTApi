@@ -19,8 +19,8 @@ Este es un proyecto evaluatorio desarrollado con **FastAPI** que implementa un C
 
 1. Clonar el repositorio:
 
-git clone https://github.com/Laureanorosales/ProyectoEvaluatorio2-FASTApi.git
-cd api-tareas
+-git clone https://github.com/Laureanorosales/ProyectoEvaluatorio2-FASTApi.git
+-cd api-tareas
 
 2. Crear entorno virtual:
 
