@@ -1,37 +1,34 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from typing import List
-
 from src.models.tarea import Tarea
-from src.db.tareas_db import cargar_tareas, guardar_tareas
+from src.models.tarea_crear import TareaCrear
 from src.models.tarea_update import TareaUpdate
-
-router = APIRouter(
-    prefix="/tareas",
-    tags=["Tareas"]
+from src.services.task_services import (
+    listar_tareas,
+    obtener_tarea,
+    crear_tarea,
+    actualizar_tarea,
+    eliminar_tarea
 )
 
+router = APIRouter(prefix="/tareas", tags=["Tareas"])
+
 @router.get("/", response_model=List[Tarea])
-def listar_tareas():
-    return cargar_tareas()
+def get_tareas():
+    return listar_tareas()
+
+@router.get("/{id}", response_model=Tarea)
+def get_tarea(id: int):
+    return obtener_tarea(id)
+
+@router.post("/", response_model=Tarea)
+def post_tarea(nueva_tarea: TareaCrear):
+    return crear_tarea(nueva_tarea)
 
 @router.put("/{id}", response_model=Tarea)
-def actualizar_tarea(id: int, tarea_actualizada: TareaUpdate):
-    tareas = cargar_tareas()
-    for tarea in tareas:
-        if tarea["id"] == id:
-            datos = tarea_actualizada.dict(exclude_unset=True)
-            tarea.update(datos)
-            guardar_tareas(tareas)
-            return tarea
-
-    raise HTTPException(status_code=404, detail="Tarea no encontrada")
+def put_tarea(id: int, tarea_actualizada: TareaUpdate):
+    return actualizar_tarea(id, tarea_actualizada)
 
 @router.delete("/{id}", status_code=204)
-def eliminar_tarea(id: int):
-    tareas = cargar_tareas()
-    tareas_filtradas = [t for t in tareas if t["id"] != id]
-
-    if len(tareas) == len(tareas_filtradas):
-        raise HTTPException(status_code=404, detail="Tarea no encontrada")
-
-    guardar_tareas(tareas_filtradas)
+def delete_tarea(id: int):
+    eliminar_tarea(id)
