@@ -4,8 +4,10 @@ from src.models.tarea_crear import TareaCrear
 from src.models.tarea_update import TareaUpdate
 from src.exceptions.tarea_exceptions import TareaNoEncontrada
 
-def listar_tareas():
-    return cargar_tareas()
+def listar_tareas(skip: int = 0, limit: int = 10):
+    tareas = cargar_tareas()
+    return tareas[skip : skip + limit]
+
 
 def obtener_tarea(id: int):
     tareas = cargar_tareas()

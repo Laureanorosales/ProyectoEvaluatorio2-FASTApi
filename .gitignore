@@ -2,10 +2,8 @@
 venv/
 
 # Cachés de Python
-__pycache__/
-*.py[cod]
-*.pyo
-*.pyd
+__pycache__
+.pytest_cache
 
 #Archivo DB
 data/tareas.json

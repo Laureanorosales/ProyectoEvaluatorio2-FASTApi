@@ -20,7 +20,7 @@ Este es un proyecto evaluatorio desarrollado con **FastAPI** que implementa un C
 
 ```bash
 git clone https://github.com/Laureanorosales/ProyectoEvaluatorio2-FASTApi.git
-cd api-tareas
+cd segundo_proyecto_evaluatorio
 ```
 
 2. Crear entorno virtual:
@@ -49,7 +49,7 @@ pip install -r requirements.txt
 5. Crear el archivo `.env`:
 
 ```env
-DB_PATH=data/tareas.json
+JSON_DB_PATH=data/tareas.json
 ```
 
 6. Ejecutar el servidor:
