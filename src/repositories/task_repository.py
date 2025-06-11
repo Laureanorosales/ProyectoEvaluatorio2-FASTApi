@@ -1,54 +1,51 @@
-from src.db.tareas_db import cargar_tareas, guardar_tareas
-from src.models.tarea_crear import TareaCrear
-from src.models.tarea_update import TareaUpdate
+import json
+from typing import List, Optional
+from src.models.tarea import Tarea
 
+class TaskRepository:
+    def __init__(self, db_path: str):
+        self.db_path = db_path
 
-def get_all_tasks():
-    return cargar_tareas()
+    def _leer_datos(self) -> List[dict]:
+        try:
+            with open(self.db_path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except FileNotFoundError:
+            return []
 
+    def _escribir_datos(self, data: List[dict]):
+        with open(self.db_path, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
 
-def get_task_by_id(task_id: int):
-    tareas = cargar_tareas()
-    for tarea in tareas:
-        if tarea["id"] == task_id:
-            return tarea
-    return None
+    def obtener_todas(self) -> List[Tarea]:
+        datos = self._leer_datos()
+        return [Tarea(**d) for d in datos]
 
+    def obtener_por_id(self, id: int) -> Optional[Tarea]:
+        tareas = self.obtener_todas()
+        for tarea in tareas:
+            if tarea.id == id:
+                return tarea
+        return None
 
-def save_task(tarea_crear: TareaCrear):
-    tareas = cargar_tareas()
-    nuevo_id = 1 if not tareas else max(t["id"] for t in tareas) + 1
-    tarea_dict = tarea_crear.model_dump()  
+    def guardar(self, tarea: Tarea):
+        tareas = self.obtener_todas()
+        tareas.append(tarea)
+        self._escribir_datos([t.dict() for t in tareas])
 
-    
-    if tarea_dict.get("fecha_limite"):
-        tarea_dict["fecha_limite"] = tarea_dict["fecha_limite"].isoformat()
-
-    tarea_dict["id"] = nuevo_id
-    tareas.append(tarea_dict)
-    guardar_tareas(tareas)
-    return tarea_dict
-
-
-def update_task(task_id: int, tarea_update: TareaUpdate):
-    tareas = cargar_tareas()
-    for tarea in tareas:
-        if tarea["id"] == task_id:
-            datos = tarea_update.model_dump(exclude_unset=True)
-
-            if "fecha_limite" in datos and datos["fecha_limite"]:
-                datos["fecha_limite"] = datos["fecha_limite"].isoformat()
-
-            tarea.update(datos)
-            guardar_tareas(tareas)
-            return tarea
-    return None
-
-
-def delete_task_by_id(task_id: int):
-    tareas = cargar_tareas()
-    tareas_filtradas = [t for t in tareas if t["id"] != task_id]
-    if len(tareas) == len(tareas_filtradas):
+    def actualizar(self, id: int, nueva_tarea: Tarea) -> bool:
+        tareas = self.obtener_todas()
+        for i, tarea in enumerate(tareas):
+            if tarea.id == id:
+                tareas[i] = nueva_tarea
+                self._escribir_datos([t.dict() for t in tareas])
+                return True
         return False
-    guardar_tareas(tareas_filtradas)
-    return True
+
+    def eliminar(self, id: int) -> bool:
+        tareas = self.obtener_todas()
+        tareas_nuevas = [t for t in tareas if t.id != id]
+        if len(tareas) == len(tareas_nuevas):
+            return False
+        self._escribir_datos([t.dict() for t in tareas_nuevas])
+        return True
