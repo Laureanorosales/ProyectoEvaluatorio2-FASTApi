@@ -1,3 +1,6 @@
-from src.app import create_app
+from fastapi import FastAPI
+from src.routers import main_router
 
-app = create_app()
+app = FastAPI()
+
+app.include_router(main_router)
