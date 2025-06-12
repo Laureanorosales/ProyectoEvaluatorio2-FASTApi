@@ -1,54 +1,34 @@
-import logging
-from typing import List, Dict, Optional
+from fastapi import HTTPException
+from src.services.task_service import TaskService
+from src.config.settings import get_settings
 
-from src.db.tareas_db import cargar_tareas, guardar_tareas
-from src.models.tarea import Tarea
-from src.models.tarea_crear import TareaCrear
-from src.models.tarea_update import TareaUpdate
-from src.exceptions.tarea_exceptions import TareaNoEncontrada
+service = TaskService(get_settings().JSON_DB_PATH)
 
+def listar_tareas_controller(skip: int, limit: int):
+    try:
+        return service.listar_tareas(skip, limit)
+    except Exception:
+        raise HTTPException(status_code=500, detail="Error interno")
 
-def listar_tareas(skip: int = 0, limit: int = 10) -> List[Dict]:
-    tareas = cargar_tareas()
-    return tareas[skip: skip + limit]
+def obtener_tarea_controller(id: int):
+    tarea = service.obtener_tarea(id)
+    if not tarea:
+        raise HTTPException(status_code=404, detail="Tarea no encontrada")
+    return tarea
 
+def crear_tarea_controller(data):
+    try:
+        return service.crear_tarea(data)
+    except Exception:
+        raise HTTPException(status_code=500, detail="Error al crear tarea")
 
-def obtener_tarea(id: int) -> Dict:
-    tareas = cargar_tareas()
-    for tarea in tareas:
-        if tarea["id"] == id:
-            return tarea
-    raise TareaNoEncontrada()
+def actualizar_tarea_controller(id: int, data):
+    tarea = service.actualizar_tarea(id, data)
+    if not tarea:
+        raise HTTPException(status_code=404, detail="Tarea no encontrada")
+    return tarea
 
-
-def crear_tarea(nueva_tarea: TareaCrear) -> Dict:
-    tareas = cargar_tareas()
-    nuevo_id = 1 if not tareas else max(t["id"] for t in tareas) + 1
-    tarea_dict = nueva_tarea.dict()
-    tarea_dict["id"] = nuevo_id
-    tareas.append(tarea_dict)
-    guardar_tareas(tareas)
-    logging.info(f"Tarea creada con ID {nuevo_id}")
-    return tarea_dict
-
-
-def actualizar_tarea(id: int, tarea_actualizada: TareaUpdate) -> Dict:
-    tareas = cargar_tareas()
-    for tarea in tareas:
-        if tarea["id"] == id:
-            datos = tarea_actualizada.dict(exclude_unset=True)
-            tarea.update(datos)
-            guardar_tareas(tareas)
-            return tarea
-    raise TareaNoEncontrada()
-
-
-def eliminar_tarea(id: int) -> None:
-    tareas = cargar_tareas()
-    tareas_filtradas = [t for t in tareas if t["id"] != id]
-    if len(tareas) == len(tareas_filtradas):
-        logging.warning(f"Intento de eliminar tarea inexistente con ID {id}")
-        raise TareaNoEncontrada()
-    guardar_tareas(tareas_filtradas)
-    logging.info(f"Tarea con ID {id} eliminada")
-
+def eliminar_tarea_controller(id: int):
+    eliminado = service.eliminar_tarea(id)
+    if not eliminado:
+        raise HTTPException(status_code=404, detail="Tarea no encontrada")

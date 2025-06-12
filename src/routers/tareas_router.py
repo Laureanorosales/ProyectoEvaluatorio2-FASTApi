@@ -1,41 +1,34 @@
-from fastapi import APIRouter, HTTPException
-from typing import List
+from fastapi import APIRouter, status
+from src.controllers.tarea_controller import (
+    obtener_tarea_controller,
+    listar_tareas_controller,
+    crear_tarea_controller,
+    actualizar_tarea_controller,
+    eliminar_tarea_controller
+)
 from src.models.tarea import Tarea
 from src.models.tarea_crear import TareaCrear
 from src.models.tarea_update import TareaUpdate
-from src.services.task_service import TaskService
-from src.repositories.task_repository import TaskRepository
-from src.config.settings import get_settings
+from typing import List
 
 router = APIRouter(prefix="/tareas", tags=["Tareas"])
 
-settings = get_settings()
-repo = TaskRepository(settings.JSON_DB_PATH)
-service = TaskService(repo)
-
 @router.get("/", response_model=List[Tarea])
 def get_tareas(skip: int = 0, limit: int = 10):
-    return service.listar_tareas(skip, limit)
+    return listar_tareas_controller(skip, limit)
 
 @router.get("/{id}", response_model=Tarea, responses={404: {"description": "Tarea no encontrada"}})
 def get_tarea(id: int):
-    tarea = service.obtener_tarea(id)
-    if not tarea:
-        raise HTTPException(status_code=404, detail="Tarea no encontrada")
-    return tarea
+    return obtener_tarea_controller(id)
 
-@router.post("/", response_model=Tarea)
-def post_tarea(nueva_tarea: TareaCrear):
-    return service.crear_tarea(nueva_tarea)
+@router.post("/", response_model=Tarea, status_code=status.HTTP_201_CREATED)
+def post_tarea(tarea: TareaCrear):
+    return crear_tarea_controller(tarea)
 
 @router.put("/{id}", response_model=Tarea, responses={404: {"description": "Tarea no encontrada"}})
-def put_tarea(id: int, tarea_actualizada: TareaUpdate):
-    tarea = service.actualizar_tarea(id, tarea_actualizada)
-    if not tarea:
-        raise HTTPException(status_code=404, detail="Tarea no encontrada")
-    return tarea
+def put_tarea(id: int, tarea: TareaUpdate):
+    return actualizar_tarea_controller(id, tarea)
 
-@router.delete("/{id}", status_code=204, responses={404: {"description": "Tarea no encontrada"}})
+@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_tarea(id: int):
-    if not service.eliminar_tarea(id):
-        raise HTTPException(status_code=404, detail="Tarea no encontrada")
+    return eliminar_tarea_controller(id)
