@@ -1,13 +1,15 @@
 from fastapi import HTTPException
 from src.services.task_service import TaskService
 from src.config.settings import get_settings
+from src.config.logger import logger
 
 service = TaskService(get_settings().JSON_DB_PATH)
 
 def listar_tareas_controller(skip: int, limit: int):
     try:
         return service.listar_tareas(skip, limit)
-    except Exception:
+    except Exception as e:
+        logger.error(f"Error al listar tareas: {e}")
         raise HTTPException(status_code=500, detail="Error interno")
 
 def obtener_tarea_controller(id: int):
@@ -19,7 +21,8 @@ def obtener_tarea_controller(id: int):
 def crear_tarea_controller(data):
     try:
         return service.crear_tarea(data)
-    except Exception:
+    except Exception as e:
+        logger.error(f"Error al crear tarea: {e}")
         raise HTTPException(status_code=500, detail="Error al crear tarea")
 
 def actualizar_tarea_controller(id: int, data):

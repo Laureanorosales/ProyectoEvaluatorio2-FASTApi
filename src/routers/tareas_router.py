@@ -9,11 +9,12 @@ from src.controllers.tarea_controller import (
 from src.models.tarea import Tarea
 from src.models.tarea_crear import TareaCrear
 from src.models.tarea_update import TareaUpdate
+from src.models.tarea_listado import TareaListado
 from typing import List
 
 router = APIRouter(prefix="/tareas", tags=["Tareas"])
 
-@router.get("/", response_model=List[Tarea])
+@router.get("/", response_model=TareaListado)
 def get_tareas(skip: int = 0, limit: int = 10):
     return listar_tareas_controller(skip, limit)
 

@@ -20,7 +20,12 @@ class TaskRepository:
 
     def list(self, skip: int, limit: int):
         tareas = self._load()
-        return [Tarea(**t) for t in tareas[skip:skip+limit]]
+        total = len(tareas)
+        paginadas = tareas[skip:skip+limit]
+        return {
+            "items": [Tarea(**t) for t in paginadas],
+            "total": total
+        }
 
     def get(self, id: int):
         tareas = self._load()
@@ -48,8 +53,8 @@ class TaskRepository:
 
     def delete(self, id: int):
         tareas = self._load()
-        tareas_nuevas = [t for t in tareas if t["id"] != id]
-        if len(tareas) == len(tareas_nuevas):
+        nuevas = [t for t in tareas if t["id"] != id]
+        if len(nuevas) == len(tareas):
             return False
-        self._save(tareas_nuevas)
+        self._save(nuevas)
         return True
